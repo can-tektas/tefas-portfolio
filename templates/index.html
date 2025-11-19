@@ -1,0 +1,126 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <!-- Summary Cards -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <h6 class="text-muted text-uppercase mb-2">Total Portfolio Value</h6>
+                <h3 class="fw-bold text-primary">₺{{ "{:,.2f}".format(total_value) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <h6 class="text-muted text-uppercase mb-2">Total Invested</h6>
+                <h3 class="fw-bold text-dark">₺{{ "{:,.2f}".format(total_invested) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <h6 class="text-muted text-uppercase mb-2">Net Profit / Loss</h6>
+                <h3 class="fw-bold {% if net_profit >= 0 %}text-success{% else %}text-danger{% endif %}">
+                    ₺{{ "{:,.2f}".format(net_profit) }}
+                    <small class="fs-6">({{ "{:,.2f}".format(net_profit_pct) }}%)</small>
+                </h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Portfolio Table -->
+    <div class="col-lg-8 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">Portfolio Breakdown</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Fund</th>
+                            <th class="text-end">Quantity</th>
+                            <th class="text-end">Avg Cost</th>
+                            <th class="text-end">Price</th>
+                            <th class="text-end">Value</th>
+                            <th class="text-end">P/L</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fund in portfolio %}
+                        <tr>
+                            <td>
+                                <div class="d-flex flex-column">
+                                    <span class="fw-bold">{{ fund.code }}</span>
+                                    <small class="text-muted text-truncate" style="max-width: 200px;">{{ fund.title
+                                        }}</small>
+                                </div>
+                            </td>
+                            <td class="text-end">{{ "{:,.0f}".format(fund.quantity) }}</td>
+                            <td class="text-end">₺{{ "{:,.4f}".format(fund.avg_cost) }}</td>
+                            <td class="text-end">₺{{ "{:,.4f}".format(fund.current_price) }}</td>
+                            <td class="text-end fw-bold">₺{{ "{:,.2f}".format(fund.current_value) }}</td>
+                            <td
+                                class="text-end {% if fund.profit_loss >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                ₺{{ "{:,.2f}".format(fund.profit_loss) }}<br>
+                                <small>{{ "{:,.2f}".format(fund.profit_loss_pct) }}%</small>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">
+                                No transactions found. Add one to get started!
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Section -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">Allocation</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="portfolioChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Chart.js Logic
+    const ctx = document.getElementById('portfolioChart').getContext('2d');
+    const portfolioChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ chart_labels | tojson }},
+    datasets: [{
+        data: {{ chart_data | tojson }},
+        backgroundColor: [
+        '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+        '#858796', '#5a5c69', '#f8f9fc', '#2e59d9', '#17a673'
+    ],
+        hoverOffset: 4
+            }]
+        },
+    options: {
+        responsive: true,
+            plugins: {
+            legend: {
+                position: 'bottom',
+                }
+        }
+    }
+    });
+</script>
+{% endblock %}
