@@ -4,3 +4,4 @@ oauth2client
 tefas-crawler
 pandas
 python-dotenv
+gunicorn
